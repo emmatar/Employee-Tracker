@@ -180,7 +180,7 @@ async function addEmployee() {
             message: 'Who is the employee\'s manager?'
         },
     ])
-    const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (????)`;
+    const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
     const params = [res.employeeFName, res.employeeLName, res.employeeRole, res.employeeManager];
     db.query(sql, params, (err, rows) => {
         if (err) {
