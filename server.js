@@ -125,173 +125,175 @@ async function addDepartment() {
 
 // add new role
 async function addRole() {
-    let sql = `SELECT id AS value, department_name AS Department FROM departments`;
-    let departmentData = []
-    await db.promise().query(sql)
-    .then(([rows]) => {
-        departmentData = rows
-    })
-    .catch((err) => {
+    let sql = `SELECT id AS value, department_name AS name FROM departments`;
+    let departmentData = await db.promise().query(sql)
+    .then(async data => {
+        const res = await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'roleName',
+                message: 'What is the name of the new role?'
+            },
+            {
+                type: 'input',
+                name: 'roleSalary',
+                message: 'What is the salary of the role?'
+            },
+            {
+                type: 'list',
+                name: 'roleDepartment',
+                message: 'Which department does this role belong to?',
+                choices: data[0]
+            }
+        ])
+        sql = `INSERT INTO roles (title, salary, department_id) VALUES ( ?, ?, ? )`;
+        const params = [res.roleName, res.roleSalary, res.roleDepartment]
+        db.query(sql, params, (err, rows) => {
+            if (err) {
+                console.log(err);
+                return;
+            };
+            console.log(`Role Created`);
+            menu();
+        })
+    }).catch((err) => {
         console.log(err);
-    })
-
-    const res = await inquirer.prompt([
-        {
-            type: 'input',
-            name: 'roleName',
-            message: 'What is the name of the new role?'
-        },
-        {
-            type: 'input',
-            name: 'roleSalary',
-            message: 'What is the salary of the role?'
-        },
-        {
-            type: 'list',
-            name: 'roleDepartment',
-            message: 'Which department does this role belong to?',
-            choices: departmentData
-        }
-    ])
-    sql = `INSERT INTO roles (title, salary, department_id) VALUES ( ?, ?, ? )`;
-    const params = [res.roleName, res.roleSalary, res.roleDepartment]
-    db.query(sql, params, (err, rows) => {
-        if (err) {
-            console.log(err);
-            return;
-        };
-        console.log(`Role Created`);
-        menu();
     })
 }
 
 // add new employee
 async function addEmployee() {
-    let sql = `SELECT id AS value, manager_id AS Manager FROM employees`;
+    let sql = `SELECT id AS value, CONCAT(first_name, ' ', last_name) AS name FROM employees`;
     let managerData = []
     await db.promise().query(sql)
-    .then(([rows]) => {
+    .then(async ([rows]) => {
         managerData = rows
-    })
-    .catch((err) => {
-        console.log(err);
-    })
-
-    sql = `SELECT id AS value, title AS Role FROM roles`;
-    let roleData = []
-    await db.promise().query(sql)
-    .then(([rows]) => {
-        roleData = rows
-    })
-    .catch((err) => {
-        console.log(err);
-    })
-    const res = await inquirer.prompt([
-        {
-            type: 'input',
-            name: 'employeeFName',
-            message: 'What is the employee\'s first name?'
-        },
-        {
-            type: 'input',
-            name: 'employeeLName',
-            message: 'What is the employee\'s last name?'
-        },
-        {
-            type: 'list',
-            name: 'employeeRole',
-            message: "What is the employee\'s role?",
-            choices: roleData
-        },
-        {
-            type: 'list',
-            name: 'employeeManager',
-            message: 'Who is the employee\'s manager?',
-            choices: managerData
-        },
-    ])
-    sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
-    const params = [res.employeeFName, res.employeeLName, res.employeeRole, res.employeeManager];
-    db.query(sql, params, (err, rows) => {
-        if (err) {
+        sql = `SELECT id AS value, title AS name FROM roles`;
+        let roleData = []
+        await db.promise().query(sql)
+        .then(async ([innerRows]) => {
+            roleData = innerRows
+            const res = await inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'employeeFName',
+                    message: 'What is the employee\'s first name?'
+                },
+                {
+                    type: 'input',
+                    name: 'employeeLName',
+                    message: 'What is the employee\'s last name?'
+                },
+                {
+                    type: 'list',
+                    name: 'employeeRole',
+                    message: "What is the employee\'s role?",
+                    choices: roleData
+                },
+                {
+                    type: 'list',
+                    name: 'employeeManager',
+                    message: 'Who is the employee\'s manager?',
+                    choices: managerData
+                },
+            ])
+            sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
+            const params = [res.employeeFName, res.employeeLName, res.employeeRole, res.employeeManager];
+            db.query(sql, params, (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                };
+                console.log(`Employee Added!`);
+                menu();
+            }); 
+        })
+        .catch((err) => {
             console.log(err);
-            return;
-        };
-        console.log(`Employee Added!`);
-        menu();
-    }); 
+        })
+        
+    })
+    .catch((err) => {
+        console.log(err);
+    })
 }
 
 // update an employee role
 async function updateEmployee() {
-    let sql = `SELECT id AS Value, first_name AS FirstName, last_Name AS LastName FROM employees`;
+    let sql = `SELECT id AS value, CONCAT(first_name, ' ', last_name) AS name FROM employees`;
     let employeeData = [];
     await db.promise().query(sql)
-    .then(([rows]) => {
+    .then(async ([rows]) => {
         employeeData = rows
-    })
-    .catch((err) => {
-        console.log(err);
-    })
-
-    sql = `SELECT id AS value, title AS Role FROM roles`;
-    let roleData = []
-    await db.promise().query(sql)
-    .then(([rows]) => {
-        roleData = rows
-    })
-    .catch((err) => {
-        console.log(err);
-    })
-
-    const res = await inquirer.prompt([
-        {
-            type: 'list',
-            name: 'employee',
-            message: 'Which employee\'s role do you want to update?',
-            choices: employeeData
-        },
-        {
-            type: 'list',
-            name: 'role',
-            message: 'Which role do you want to assign the selected employee?',
-            choices: roleData
-        }
-    ]);
-
-    sql = `UPDATE employees SET role_id = ? WHERE id = ?`;
-    const params = [res.employeedata, res.roleData]
-    db.query(sql, params, (err, rows) => {
-        if (err) {
+        sql = `SELECT id AS value, title AS name FROM roles`;
+        let roleData = []
+        await db.promise().query(sql)
+        .then(async ([innerRows]) => {
+            roleData = innerRows
+            const res = await inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'employee',
+                    message: 'Which employee\'s role do you want to update?',
+                    choices: employeeData
+                },
+                {
+                    type: 'list',
+                    name: 'role',
+                    message: 'Which role do you want to assign the selected employee?',
+                    choices: roleData
+                }
+            ]);
+        
+            sql = `UPDATE employees SET role_id = ? WHERE id = ?`;
+            const params = [res.employeedata, res.roleData]
+            db.query(sql, params, (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                console.log(`Employee Role Updated!`);
+                menu();
+            })
+        })
+        .catch((err) => {
             console.log(err);
-            return;
-        }
-        console.log(`Employee Role Updated!`);
-        menu();
+        })
     })
+    .catch((err) => {
+        console.log(err);
+    })
+
+
 }
 
 // delete an employee
 async function deleteEmployee() {
-    const res = await inquirer.prompt([
-        {
-            type: 'list',
-            name: 'delete',
-            message: 'What is the employee\'s name you would like to delete?',
-            choices: ['Tom Allens', 'Mr Bean', 'Chauncey Billips', 'Malia Brown', 'Mike Chan', 'Sarah Lourd', 'Ashley Rodriguez', 'Ben Simmons', 'Kevin Tupik']
-        }
-    ])
-    
-    const sql = `DELETE FROM employees WHERE id = ?`;
-    const params = [res.delete];
-    db.query(sql, params, (err, rows) => {
-        if (err) {
-            console.log(err);
-            return;
-        };
-        console.log(`Employee Added!`);
-        menu();
-    }); 
+    let sql = `SELECT id AS value, CONCAT(first_name, ' ', last_name) AS name FROM employees`;
+    let employeeData = [];
+    await db.promise().query(sql)
+    .then(async ([rows]) => {
+        employeeData = rows
+        const res = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'delete',
+                message: 'What is the employee\'s name you would like to delete?',
+                choices: employeeData
+            }
+        ])
+        
+        const sql = `DELETE FROM employees WHERE id = ?`;
+        const params = [res.delete];
+        db.query(sql, params, (err, rows) => {
+            if (err) {
+                console.log(err);
+                return;
+            };
+            console.log(`Employee Deleted!`);
+            menu();
+        }); 
+    })
 }
 
 menu();
