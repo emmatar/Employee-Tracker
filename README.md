@@ -53,7 +53,7 @@ Once the the Employee Tracker is initiated, the user will be prompted with a ser
 
 The application displays a list of options to choose from when initiated. The first three options: View all departments, View all roles, and View all employees are all commands that display information, but however, will not make changest the application's structure. The rest of the options: Add a department, Add a role, Add an employee, Update an employee role, and Delete an employee are all commands that will seek further information from the User (this is where the "text" inputs come into place, with a little flirting from the "list" inputs also!). The user can enter the information they see fit, and once the prompts have all been answered, a message will display confirming the result of the users commands.
 
-[Here's a link to the Walkthrough Video!]()
+[Here's a link to the Walkthrough Video!](https://drive.google.com/file/d/13LNOX-5Gz82c-5qGObH6FWZElyYgQblr/view)
 
 ![Screenshot1](/lib/img/Employee%20Tracer%20npm%20start.png)
 ![Screenshot2](/lib/img/Employee%20Tracker%20All.png)
